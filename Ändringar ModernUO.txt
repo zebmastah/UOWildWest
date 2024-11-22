@@ -1,0 +1,91 @@
+SkillCheck.cs
+	CheckSkill()
+		100% skillgain.
+	Gain()
+		Få en hel poäng skill varje gång.
+		Ge 100% att även få statgain.
+Bandage.cs
+	OnTarget()
+		Konsumera inte bandage
+	BeginHeal()
+		Timer kan gå ner till 1 sekund.
+
+PlayerMobile.cs
+	OnDeath()
+		Återuppliva efter 20 sekunder.
+	GetParentMoveResultFor()
+	GetInventoryMoveResultFor()
+		Tappa inga items.
+LootPack.cs
+	Mutate()
+		Sätter bonusprops till 15 och maxprops till 25.
+		Sätter Intensity till 90-100%
+	GetLuckChance()
+		Returnera 100000;
+
+BaseRanged.cs
+	OnFired()
+		Returnera true för att aldrig konsumera pilar.
+	OnSwing()
+		Ändrar villkor så man aldrig behöver vara stillastående.
+Spell.cs
+	BlocksMovement
+		Returnerar false alltid.
+	ConsumeReagents() 
+		Lägger till || true för att aldrig konsumera regs.
+
+
+Server.Skills.cs
+	Line 463: Cap = 7000; -> Cap = 70000
+	Line 489: Cap = 7000; -> Cap = 70000
+		Sätter Skills till tio gånger mer. 
+UOContent.RewardSystem.cs
+	Line 585: m.SkillsCap = 7000 -> m.SkillsCap = 70000
+		Sätter Skills till tio gånger mer. 
+Server.Mobile.cs
+	Line 7702: m_StatCap = 500
+	Line 6339: m_StatCap = 500
+	Line 1726 m_StatCap = 500;
+UOContent.PlayerMobile.cs
+	Int()
+	Str()
+	Dex()
+		Sätter maxcap till 300 per individuell stat.
+
+UOContent.PlayerMobile.cs
+	Resurrect()
+		Skapa inga deathrobes. PGA Autoress kan det bli problem.
+UOContent.BaseChampion.cs
+	CreateRandomPowerScroll()
+		Ge alltid 120 scrolls.
+UOContent.PaladinSpell.cs
+	CheckCast()
+	CheckFizzle()
+		Borttaget krav på tithing points.
+ChampionSpawn.cs
+	Lägre kill count
+
+UOContent.BaseArmor.cs
+	OnCraft()
+		Lägg alltid på 20 attribut.
+UOContent.Hats.cs (BaseHat klassen)
+	OnCraft()
+		Lägg alltid på 20 attribut.
+UOContent.BaseWeapon
+	OnCraft()
+		Lägg alltid på 20 attribut.
+UOContent.Spellbook.cs
+	OnCraft()
+		Lägg alltid på 10 attribut
+UOContent.BaseJewel.cs
+	OnCraft()
+		Lägg alltid på 20 attribut.
+UOContent.Begging.cs
+	OnTick()
+		Ge mer pengar från begging.
+UOContent.HonorContext.cs
+	OnTargetKilled()
+		Löst bugg med att döda honortargets.
+UOContent.StaminaSystem.cs 
+	ProcessPlayerMovement()
+		Console checks debug. 0,1 -> 0.1 i konfigurationsfil för ubuntu.

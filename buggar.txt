@@ -1,0 +1,5 @@
+arcanist quest giver
+teleporter till isle of divide - klar
+häst blir unused item vid död
+
+exceptional blir 40% sämre än vanlig
