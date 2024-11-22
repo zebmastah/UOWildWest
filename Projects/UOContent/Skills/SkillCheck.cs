@@ -97,7 +97,9 @@ public static class SkillCheck
         {
             return false;
         }
-
+        // Zebcustom
+        // Ge gain på allt
+        Gain(from, skill);
         var success = chance >= Utility.RandomDouble();
 
         var region = from.Region;
@@ -105,7 +107,7 @@ public static class SkillCheck
         {
             if (skill.Base < 10.0) // Gain regardless of the AllowGain check
             {
-                Gain(from, skill);
+                //Gain(from, skill);
             }
             else if (AllowGain(from, skill, amObj))
             {
@@ -130,7 +132,7 @@ public static class SkillCheck
 
                 if (gc >= Utility.RandomDouble())
                 {
-                    Gain(from, skill);
+                    //Gain(from, skill);
                 }
             }
 
@@ -219,7 +221,8 @@ public static class SkillCheck
 
         if (skill.Base < skill.Cap && skill.Lock == SkillLock.Up)
         {
-            var toGain = 1;
+            // Zebcustom, gaina en hel poäng varje gång.
+            var toGain = 10;
 
             if (skill.Base <= 10.0)
             {
@@ -253,7 +256,7 @@ public static class SkillCheck
             }
         }
 
-        if (_usePub45StatGain && skill.Lock == SkillLock.Up)
+        if (_usePub45StatGain && skill.Lock == SkillLock.Up || true /* Zebcustom, alltid true*/)
         {
             var info = skill.Info;
 
@@ -269,7 +272,7 @@ public static class SkillCheck
             }
 
             // Flat 1 in 20 chance to gain anything
-            if (0.05 * _statGainChanceMultiplier > Utility.RandomDouble())
+            if (0.05 * _statGainChanceMultiplier > Utility.RandomDouble() || true /* Zebcustom, alltid true*/)
             {
                 // 75% for primary, 25% for secondary - Unless primary is not set to gain.
                 var statToGain = primaryStatLock is StatLockType.Up && _primaryStatGainChance > Utility.RandomDouble()
