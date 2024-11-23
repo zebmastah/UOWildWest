@@ -96,7 +96,7 @@ public partial class Bandage : Item, IDyable
                 {
                     if (!(BandageContext.BeginHeal(from, mobile) == null || DuelContext.IsFreeConsume(from)))
                     {
-                        _bandage.Consume();
+                        //_bandage.Consume();
                     }
                 }
                 else
@@ -111,7 +111,7 @@ public partial class Bandage : Item, IDyable
             {
                 if (innard.OnBandage(from))
                 {
-                    _bandage.Consume();
+                    //_bandage.Consume();
                 }
 
                 return;
@@ -126,7 +126,7 @@ public partial class Bandage : Item, IDyable
             {
                 if (innard.OnBandage(from))
                 {
-                    _bandage.Consume();
+                    //_bandage.Consume();
                 }
             }
             else
@@ -518,6 +518,9 @@ public class BandageContext : Timer
             var context = GetContext(healer);
 
             context?.StopHeal();
+            // Zebcustom, ner till 1 sekund är möjligt.
+            seconds = Math.Min(8, Math.Ceiling(11.0 - dex / 20));
+            seconds = Math.Max(seconds, 1);
             seconds *= 1000;
 
             context = new BandageContext(healer, patient, TimeSpan.FromMilliseconds(seconds));
