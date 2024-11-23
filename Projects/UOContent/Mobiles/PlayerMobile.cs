@@ -2360,7 +2360,7 @@ namespace Server.Mobiles
 
             base.Resurrect();
 
-            if (Alive && !wasAlive)
+            /*if (Alive && !wasAlive)
             {
                 Item deathRobe = new DeathRobe();
 
@@ -2368,7 +2368,7 @@ namespace Server.Mobiles
                 {
                     deathRobe.Delete();
                 }
-            }
+            }*/
         }
 
         public override void OnWarmodeChanged()
@@ -2499,7 +2499,7 @@ namespace Server.Mobiles
 
             var res = base.GetParentMoveResultFor(item);
 
-            if (res == DeathMoveResult.MoveToCorpse && item.Movable && Young)
+            if (res == DeathMoveResult.MoveToCorpse && item.Movable)
             {
                 res = DeathMoveResult.MoveToBackpack;
             }
@@ -2522,7 +2522,7 @@ namespace Server.Mobiles
 
             var res = base.GetInventoryMoveResultFor(item);
 
-            if (res == DeathMoveResult.MoveToCorpse && item.Movable && Young)
+            if (res == DeathMoveResult.MoveToCorpse && item.Movable)
             {
                 res = DeathMoveResult.MoveToBackpack;
             }
@@ -2541,6 +2541,16 @@ namespace Server.Mobiles
             }
 
             base.OnDeath(c);
+
+            SendMessage("You have died but will automatically resurrect within 20 seconds");
+            Timer.DelayCall(TimeSpan.FromSeconds(20), () =>
+            {
+                if (this.Alive == false) // Kontrollera att spelaren fortfarande är död
+                {
+                    Resurrect();  // Återuppliva spelaren
+                    SendMessage("You have been resurrected, go back and fight!");
+                }
+            });
 
             EquipSnapshot = null;
 
