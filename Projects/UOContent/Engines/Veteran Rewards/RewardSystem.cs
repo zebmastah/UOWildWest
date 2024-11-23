@@ -575,8 +575,8 @@ namespace Server.Engines.VeteranRewards
             }
 
             ComputeRewardInfo(m, out var cur, out var max, out var level);
-
-            if (m.SkillsCap is 7000 or 7050 or 7100 or 7150 or 7200)
+            // Zebcustom, ingen poäng att öka skills.
+            /*if (m.SkillsCap is 7000 or 7050 or 7100 or 7150 or 7200)
             {
                 level = Math.Clamp(level, 0, 4);
 
@@ -588,7 +588,7 @@ namespace Server.Engines.VeteranRewards
                 {
                     m.SkillsCap = 7000;
                 }
-            }
+            }*/
 
             if (Core.ML && m is PlayerMobile pm && !pm.HasStatReward && HasHalfLevel(pm))
             {
