@@ -610,7 +610,8 @@ namespace Server.Items
 
             if (Core.AOS)
             {
-                (tool as BaseRunicTool)?.ApplyAttributesTo(this);
+                //(tool as BaseRunicTool)?.ApplyAttributesTo(this);
+                BaseRunicTool.ApplyAttributesTo(this, 20, 90, 100);
             }
 
             return quality;

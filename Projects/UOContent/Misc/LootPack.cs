@@ -716,7 +716,9 @@ namespace Server
                     {
                         props = MaxProps;
                     }
-
+                    props = 15;
+                    MinIntensity = 90;
+                    MaxIntensity = 100;
                     if (item is BaseWeapon weapon)
                     {
                         BaseRunicTool.ApplyAttributesTo(weapon, false, luckChance, props, MinIntensity, MaxIntensity);

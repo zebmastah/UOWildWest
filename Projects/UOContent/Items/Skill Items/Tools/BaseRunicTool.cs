@@ -632,8 +632,8 @@ public abstract partial class BaseRunicTool : BaseTool
         m_Props.SetAll(false);
 
         var isShield = armor is BaseShield;
-        var baseCount = isShield ? 7 : 20;
-        var baseOffset = isShield ? 0 : 4;
+        var baseCount = 20;
+        var baseOffset = isShield ? 0 : 1;
 
         if (!isShield && armor.MeditationAllowance == ArmorMeditationAllowance.All)
         {
@@ -678,15 +678,7 @@ public abstract partial class BaseRunicTool : BaseTool
                     }
                 case 2:
                     {
-                        if (Core.ML)
-                        {
-                            ApplyAttribute(primary, min, max, AosAttribute.ReflectPhysical, 1, 15);
-                        }
-                        else
-                        {
-                            ApplyAttribute(primary, min, max, AosAttribute.AttackChance, 1, 15);
-                        }
-
+                        ApplyAttribute(primary, min, max, AosAttribute.AttackChance, 1, 15);
                         break;
                     }
                 case 3:
