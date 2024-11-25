@@ -687,10 +687,11 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
                 Hue = 0;
             }
 
-            if (tool is BaseRunicTool runicTool)
+            /*if (tool is BaseRunicTool runicTool)
             {
                 runicTool.ApplyAttributesTo(this);
-            }
+            }*/
+            BaseRunicTool.ApplyAttributesTo(this, 20, 90, 100);
 
             if (Quality == WeaponQuality.Exceptional)
             {
@@ -698,13 +699,7 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
 
                 if (Core.ML)
                 {
-                    Attributes.WeaponDamage += (int)(from.Skills.ArmsLore.Value / 20);
-
-                    if (Attributes.WeaponDamage > 50)
-                    {
-                        Attributes.WeaponDamage = 50;
-                    }
-
+                    Attributes.WeaponDamage += (int)(from.Skills.ArmsLore.Value / 2);
                     from.CheckSkill(SkillName.ArmsLore, 0, 100);
                 }
             }

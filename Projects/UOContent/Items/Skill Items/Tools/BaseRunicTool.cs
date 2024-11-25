@@ -309,7 +309,6 @@ public abstract partial class BaseRunicTool : BaseTool
         for (var i = 0; i < attributeCount; ++i)
         {
             var random = GetUniqueRandom(25);
-
             if (random == -1)
             {
                 break;

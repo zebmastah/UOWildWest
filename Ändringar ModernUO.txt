@@ -1,9 +1,3 @@
-PlayerMobile.cs
-	OnDeath()
-		Återuppliva efter 20 sekunder.
-	GetParentMoveResultFor()
-	GetInventoryMoveResultFor()
-		Tappa inga items.
 LootPack.cs
 	Mutate()
 		Sätter bonusprops till 15 och maxprops till 25.
@@ -24,9 +18,6 @@ Spell.cs
 
 
 
-UOContent.PlayerMobile.cs
-	Resurrect()
-		Skapa inga deathrobes. PGA Autoress kan det bli problem.
 UOContent.BaseChampion.cs
 	CreateRandomPowerScroll()
 		Ge alltid 120 scrolls.
@@ -55,9 +46,4 @@ UOContent.BaseJewel.cs
 UOContent.Begging.cs
 	OnTick()
 		Ge mer pengar från begging.
-UOContent.HonorContext.cs
-	OnTargetKilled()
-		Löst bugg med att döda honortargets.
-UOContent.StaminaSystem.cs 
-	ProcessPlayerMovement()
-		Console checks debug. 0,1 -> 0.1 i konfigurationsfil för ubuntu.
+

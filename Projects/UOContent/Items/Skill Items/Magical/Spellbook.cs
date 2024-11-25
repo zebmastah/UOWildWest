@@ -164,7 +164,7 @@ public partial class Spellbook : Item, ICraftable, ISlayer, IAosItem
     {
         var magery = from.Skills.Magery.BaseFixedPoint;
 
-        if (magery >= 800)
+        /*if (magery >= 800)
         {
             int[] propertyCounts;
             int minIntensity;
@@ -204,8 +204,9 @@ public partial class Spellbook : Item, ICraftable, ISlayer, IAosItem
             var propertyCount = propertyCounts.RandomElement();
 
             BaseRunicTool.ApplyAttributesTo(this, true, 0, propertyCount, minIntensity, maxIntensity);
-        }
-
+            
+        }*/
+        BaseRunicTool.ApplyAttributesTo(this, 20, 90, 100);
         if (makersMark)
         {
             Crafter = from.RawName;

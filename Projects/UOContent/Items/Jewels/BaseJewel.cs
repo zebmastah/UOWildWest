@@ -182,7 +182,7 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
                 GemType = GemType.Diamond;
             }
         }
-
+        BaseRunicTool.ApplyAttributesTo(this, 20, 90, 100);
         return 1;
     }
 

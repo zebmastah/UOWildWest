@@ -52,7 +52,7 @@ namespace Server.Items
                     Core.SE ? 15 : 14
                 ); // BLAME OSI. (We can't confirm it's an OSI bug yet.)
             }
-
+            BaseRunicTool.ApplyAttributesTo(this, 20, 90, 100);
             return base.OnCraft(quality, makersMark, from, craftSystem, typeRes, tool, craftItem, resHue);
         }
     }
