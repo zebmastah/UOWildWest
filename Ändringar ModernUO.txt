@@ -28,21 +28,6 @@ UOContent.PaladinSpell.cs
 ChampionSpawn.cs
 	Lägre kill count
 
-UOContent.BaseArmor.cs
-	OnCraft()
-		Lägg alltid på 20 attribut.
-UOContent.Hats.cs (BaseHat klassen)
-	OnCraft()
-		Lägg alltid på 20 attribut.
-UOContent.BaseWeapon
-	OnCraft()
-		Lägg alltid på 20 attribut.
-UOContent.Spellbook.cs
-	OnCraft()
-		Lägg alltid på 10 attribut
-UOContent.BaseJewel.cs
-	OnCraft()
-		Lägg alltid på 20 attribut.
 UOContent.Begging.cs
 	OnTick()
 		Ge mer pengar från begging.

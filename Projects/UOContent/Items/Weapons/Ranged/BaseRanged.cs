@@ -45,7 +45,7 @@ namespace Server.Items
 
             // Make sure we've been standing still for .25/.5/1 second depending on Era
             if (Core.TickCount - attacker.LastMoveTime >= (Core.SE ? 250 : Core.AOS ? 500 : 1000) ||
-                Core.AOS && WeaponAbility.GetCurrentAbility(attacker) is MovingShot)
+                Core.AOS && WeaponAbility.GetCurrentAbility(attacker) is MovingShot || true /*Override på alla villkor*/)
             {
                 var canSwing = true;
 
@@ -182,7 +182,7 @@ namespace Server.Items
 
         public virtual bool OnFired(Mobile attacker, Mobile defender)
         {
-            if (attacker.Player)
+            /*if (attacker.Player)
             {
                 var quiver = attacker.FindItemOnLayer<BaseQuiver>(Layer.Cloak);
                 var pack = attacker.Backpack;
@@ -204,7 +204,7 @@ namespace Server.Items
                     // lower ammo cost should not work when we have no ammo at all
                     return false;
                 }
-            }
+            }*/ 
 
             attacker.MovingEffect(defender, EffectID, 18, 1, false, false);
             return true;
