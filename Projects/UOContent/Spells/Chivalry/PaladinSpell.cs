@@ -31,12 +31,12 @@ namespace Server.Spells.Chivalry
                 return false;
             }
 
-            if (Caster.TithingPoints < RequiredTithing)
+            /*if (Caster.TithingPoints < RequiredTithing)
             {
                 // You must have at least ~1_TITHE_REQUIREMENT~ Tithing Points to use this ability,
                 Caster.SendLocalizedMessage(1060173, RequiredTithing.ToString());
                 return false;
-            }
+            }*/
 
             if (Caster.Mana < mana)
             {
@@ -59,12 +59,12 @@ namespace Server.Spells.Chivalry
 
             var mana = ScaleMana(RequiredMana);
 
-            if (Caster.TithingPoints < requiredTithing)
+            /*if (Caster.TithingPoints < requiredTithing)
             {
                 // You must have at least ~1_TITHE_REQUIREMENT~ Tithing Points to use this ability,
                 Caster.SendLocalizedMessage(1060173, RequiredTithing.ToString());
                 return false;
-            }
+            }*/
 
             if (Caster.Mana < mana)
             {
@@ -73,7 +73,7 @@ namespace Server.Spells.Chivalry
                 return false;
             }
 
-            Caster.TithingPoints -= requiredTithing;
+            //Caster.TithingPoints -= requiredTithing;
 
             if (!base.CheckFizzle())
             {

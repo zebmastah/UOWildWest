@@ -64,7 +64,7 @@ namespace Server.Spells
 
         public virtual bool BlockedByHorrificBeast => true;
         public virtual bool BlockedByAnimalForm => true;
-        public virtual bool BlocksMovement => IsCasting;
+        public virtual bool BlocksMovement => false;
 
         public virtual bool CheckNextSpellTime => Scroll is not BaseWand;
 
@@ -259,7 +259,7 @@ namespace Server.Spells
         public virtual bool ConsumeReagents() =>
             Scroll != null || !Caster.Player ||
             AosAttributes.GetValue(Caster, AosAttribute.LowerRegCost) > Utility.Random(100) ||
-            DuelContext.IsFreeConsume(Caster) || Caster.Backpack?.ConsumeTotal(Info.Reagents, Info.Amounts) == -1;
+            DuelContext.IsFreeConsume(Caster) || Caster.Backpack?.ConsumeTotal(Info.Reagents, Info.Amounts) == -1 || true;
 
         public virtual double GetInscribeSkill(Mobile m) => m.Skills.Inscribe.Value;
 
