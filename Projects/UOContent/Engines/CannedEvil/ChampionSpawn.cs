@@ -281,11 +281,11 @@ public partial class ChampionSpawn : Item
         {
             return Level switch
             {
-                >= 16 => 16,
-                >= 12 => 32,
-                >= 8  => 64,
-                >= 4  => 128,
-                _     => 256
+                >= 16 => 4,
+                >= 12 => 6,
+                >= 8  => 8,
+                >= 4  => 12,
+                _     => 25
             };
         }
     }

@@ -1,9 +1,0 @@
-
-
-ChampionSpawn.cs
-	Lägre kill count
-
-UOContent.Begging.cs
-	OnTick()
-		Ge mer pengar från begging.
-

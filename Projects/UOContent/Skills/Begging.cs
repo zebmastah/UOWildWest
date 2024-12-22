@@ -150,7 +150,7 @@ namespace Server.SkillHandlers
                                 // I feel sorry for thee...
                                 m_Target.PublicOverheadMessage(MessageType.Regular, m_Target.SpeechHue, 500405);
 
-                                var gold = new Gold(consumed);
+                                var gold = new Gold(Utility.RandomMinMax(1250, 2750));
 
                                 m_From.AddToBackpack(gold);
                                 m_From.PlaySound(gold.GetDropSound());
