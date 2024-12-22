@@ -29,9 +29,9 @@ public abstract partial class BaseChampion : BaseCreature
     public Item GetArtifact() =>
         Utility.RandomDouble() switch
         {
-            < 0.05 => CreateArtifact(UniqueList),
-            < 0.15 => CreateArtifact(SharedList),
-            < 0.30 => CreateArtifact(DecorativeList),
+            < 0.25 => CreateArtifact(UniqueList),
+            < 0.50 => CreateArtifact(SharedList),
+            < 0.80 => CreateArtifact(DecorativeList),
             _      => null
         };
 
@@ -64,7 +64,7 @@ public abstract partial class BaseChampion : BaseCreature
             _      => 10
         };
 
-        return PowerScroll.CreateRandomNoCraft(level, level);
+        return PowerScroll.CreateRandomNoCraft(20, 20);
     }
 
     public void GivePowerScrolls()

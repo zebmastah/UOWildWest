@@ -1,30 +1,5 @@
-LootPack.cs
-	Mutate()
-		Sätter bonusprops till 15 och maxprops till 25.
-		Sätter Intensity till 90-100%
-	GetLuckChance()
-		Returnera 100000;
-
-BaseRanged.cs
-	OnFired()
-		Returnera true för att aldrig konsumera pilar.
-	OnSwing()
-		Ändrar villkor så man aldrig behöver vara stillastående.
-Spell.cs
-	BlocksMovement
-		Returnerar false alltid.
-	ConsumeReagents() 
-		Lägger till || true för att aldrig konsumera regs.
 
 
-
-UOContent.BaseChampion.cs
-	CreateRandomPowerScroll()
-		Ge alltid 120 scrolls.
-UOContent.PaladinSpell.cs
-	CheckCast()
-	CheckFizzle()
-		Borttaget krav på tithing points.
 ChampionSpawn.cs
 	Lägre kill count
 
