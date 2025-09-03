@@ -13,15 +13,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
+using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Server.Logging;
-using Server.Misc;
 
 namespace Server.Network;
 
@@ -35,10 +37,13 @@ public static class TcpServer
     public static IPEndPoint[] ListeningAddresses { get; private set; }
     public static Socket[] Listeners { get; private set; }
 
+    private static IPRateLimiter _ipRateLimiter;
+
     public static void Start()
     {
-        HashSet<IPEndPoint> listeningAddresses = new HashSet<IPEndPoint>();
-        List<Socket> listeners = new List<Socket>();
+        _ipRateLimiter = new IPRateLimiter(10, 10000, 1000, 2.0, 3_600_000, Core.ClosingTokenSource.Token);
+        HashSet<IPEndPoint> listeningAddresses = [];
+        List<Socket> listeners = [];
         foreach (var ipep in ServerConfiguration.Listeners)
         {
             var listener = CreateListener(ipep);
@@ -62,7 +67,7 @@ public static class TcpServer
 
         foreach (var ipep in listeningAddresses)
         {
-            logger.Information("Listening: {Address}:{Port}", ipep.Address, ipep.Port);
+            logger.Information("Listening: {Address}", ipep);
         }
 
         ListeningAddresses = listeningAddresses.ToArray();
@@ -107,65 +112,117 @@ public static class TcpServer
             // WSAEADDRINUSE
             if (se.ErrorCode == 10048)
             {
-                logger.Warning("Listener: {Address}:{Port}: Failed (In Use)", ipep.Address, ipep.Port);
+                logger.Warning("Listener: {Address} Exception: {Reason}", ipep, "Currently in use");
             }
             // WSAEADDRNOTAVAIL
             else if (se.ErrorCode == 10049)
             {
-                logger.Warning("Listener {Address}:{Port}: Failed (Unavailable)", ipep.Address, ipep.Port);
+                logger.Warning("Listener {Address} Exception: {Reason}", ipep, "Unavailable");
             }
             else
             {
-                logger.Warning(se, "Listener Exception:");
+                logger.Warning(se, "Listener {Address} Exception: {Reason}", ipep, se.Message);
             }
         }
 
         return null;
     }
 
-    private static async void BeginAcceptingSockets(Socket listener)
+    private static async ValueTask BeginAcceptingSockets(Socket listener)
     {
         while (!Core.Closing)
         {
-            Socket socket = null;
             try
             {
-                socket = await listener.AcceptAsync();
+                var socket = await listener.AcceptAsync(Core.ClosingTokenSource.Token);
                 var remoteIP = ((IPEndPoint)socket.RemoteEndPoint)!.Address;
 
-                if (!IPLimiter.Verify(remoteIP))
+                if (!_ipRateLimiter.Verify(remoteIP, out var totalAttempts))
                 {
-                    TraceDisconnect("Past IP limit threshold", remoteIP);
-                    logger.Debug("{Address} Past IP limit threshold", remoteIP);
+                    logger.Debug("{Address} Past IP limit threshold ({TotalAttempts})", remoteIP, totalAttempts);
                 }
                 else if (Firewall.IsBlocked(remoteIP))
                 {
-                    TraceDisconnect("Firewalled", remoteIP);
                     logger.Debug("{Address} Firewalled", remoteIP);
                 }
                 else
                 {
-                    var args = new SocketConnectEventArgs(socket);
-                    EventSink.InvokeSocketConnect(args);
-
-                    if (args.AllowConnection)
-                    {
-                        _ = new NetState(socket);
-                        continue;
-                    }
-
-                    TraceDisconnect("Rejected by socket event handler", remoteIP);
-
-                    // Reject the connection
-                    socket.Send(_socketRejected, SocketFlags.None);
+                    _ = Task.Run(() => ProcessSocketConnection(socket), Core.ClosingTokenSource.Token);
                 }
-
-                CloseSocket(socket);
             }
             catch
             {
+                // ignored
+            }
+        }
+    }
+
+    [ThreadStatic]
+    private static byte[] _firstBytes;
+
+    private static async ValueTask ProcessSocketConnection(Socket socket)
+    {
+        _firstBytes ??= GC.AllocateUninitializedArray<byte>(128);
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(Core.ClosingTokenSource.Token);
+        cts.CancelAfter(TimeSpan.FromMilliseconds(500));
+
+        try
+        {
+            var bytesRead = await socket.ReceiveAsync(_firstBytes, SocketFlags.Peek, cts.Token);
+
+            var isValid =
+                // Sometimes when newer clients are connecting to the game server the first 4 bytes are sent separately
+                bytesRead == 4 ||
+
+                // Support Freeshard Protocol (UOGateway)
+                bytesRead == 8 &&
+                BinaryPrimitives.ReadUInt32BigEndian(_firstBytes.AsSpan(4)) is 0xF10004FF or 0xF10004FE ||
+
+                // Older clients only send the 4 byte seed first then 0x80
+                (UOClient.MinRequired == null || UOClient.MinRequired < ClientVersion.Version6050) &&
+                bytesRead >= 66 && _firstBytes[4] == 0x80 ||
+
+                // Newer clients
+                (UOClient.MaxRequired == null || UOClient.MaxRequired >= ClientVersion.Version6050) && (
+                    // Account Login - 0xEF + 0x80 (83 bytes)
+                    bytesRead >= 83 && _firstBytes[0] == 0xEF && _firstBytes[21] == 0x80 ||
+                    bytesRead == 21 && _firstBytes[0] == 0xEF ||
+                    // Game Login - 4 bytes + 0x91 (69 bytes)
+                    bytesRead >= 69 && _firstBytes[4] == 0x91
+                );
+
+            // TODO: Validate client version is v4 -> v7 for 0xEF packet
+            // TODO: Validate Account Login seed matches Game Login seed
+            // TODO: Validate AuthId for 0x91 packet
+            // TODO: Validate username is ascii and not empty
+            // TODO: Validate password is ascii and not empty
+            if (isValid)
+            {
+                var args = new SocketConnectEventArgs(socket);
+                EventSink.InvokeSocketConnect(args);
+
+                if (args.AllowConnection)
+                {
+                    Core.LoopContext.Post(() => _ = new NetState(socket), EventLoopContext.Priority.High);
+                    return;
+                }
+
+                logger.Debug("{Address} Rejected by socket handler", ((IPEndPoint)socket.RemoteEndPoint)!.Address);
+
+                cts.TryReset();
+                cts.CancelAfter(TimeSpan.FromMilliseconds(500));
+                await socket.SendAsync(_socketRejected, SocketFlags.None, cts.Token);
                 CloseSocket(socket);
             }
+            else
+            {
+                ForceCloseSocket(socket);
+            }
+        }
+        catch
+        {
+            ForceCloseSocket(socket);
         }
     }
 
@@ -182,22 +239,16 @@ public static class TcpServer
         }
     }
 
-    private static void TraceDisconnect(string reason, IPAddress ip)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void ForceCloseSocket(Socket socket)
     {
         try
         {
-            using StreamWriter op = new StreamWriter("network-socket-disconnects.log", true);
-            op.WriteLine($"# {Core.Now}");
-
-            op.WriteLine($"Address: {ip}");
-            op.WriteLine(reason);
-
-            op.WriteLine();
-            op.WriteLine();
+            socket.Disconnect(false);
         }
-        catch
+        finally
         {
-            // ignored
+            socket.Close(0);
         }
     }
 }

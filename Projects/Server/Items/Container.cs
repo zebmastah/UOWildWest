@@ -1,3 +1,18 @@
+/*************************************************************************
+ * ModernUO                                                              *
+ * Copyright 2019-2025 - ModernUO Development Team                       *
+ * Email: hi@modernuo.com                                                *
+ * File: Container.cs                                                    *
+ *                                                                       *
+ * This program is free software: you can redistribute it and/or modify  *
+ * it under the terms of the GNU General Public License as published by  *
+ * the Free Software Foundation, either version 3 of the License, or     *
+ * (at your option) any later version.                                   *
+ *                                                                       *
+ * You should have received a copy of the GNU General Public License     *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,7 +40,7 @@ public partial class Container : Item
 
     private int m_TotalItems;
     private int m_TotalWeight;
-    private int _version;
+    internal int _version;
 
     [SerializableField(3)]
     [SerializedCommandProperty(AccessLevel.GameMaster)]
@@ -281,16 +296,6 @@ public partial class Container : Item
         return true;
     }
 
-    private static void SetSaveFlag(ref SaveFlag flags, SaveFlag toSet, bool setIf)
-    {
-        if (setIf)
-        {
-            flags |= toSet;
-        }
-    }
-
-    private static bool GetSaveFlag(SaveFlag flags, SaveFlag toGet) => (flags & toGet) != 0;
-
     [AfterDeserialization]
     private void AfterDeserialization()
     {
@@ -423,7 +428,7 @@ public partial class Container : Item
         return false;
     }
 
-    public virtual bool TryDropItems(Mobile from, bool sendFullMessage, params Item[] droppedItems)
+    public virtual bool TryDropItems(Mobile from, bool sendFullMessage, params ReadOnlySpan<Item> droppedItems)
     {
         var dropItems = new List<Item>();
         var stackItems = new List<ItemStackEntry>();
@@ -1212,21 +1217,23 @@ public partial class Container : Item
     {
         var consumed = 0;
 
-        using var toDelete = PooledRefQueue<Item>.Create();
+        var toDelete = PooledRefQueue<Item>.Create();
 
-        RecurseConsumeUpTo(this, type, amount, recurse, ref consumed, toDelete);
+        RecurseConsumeUpTo(this, type, amount, recurse, ref consumed, ref toDelete);
 
         while (toDelete.Count > 0)
         {
             toDelete.Dequeue().Delete();
         }
 
+        toDelete.Dispose();
+
         return consumed;
     }
 
     private static void RecurseConsumeUpTo(
         Item current, Type type, int amount, bool recurse, ref int consumed,
-        PooledRefQueue<Item> toDelete
+        ref PooledRefQueue<Item> toDelete
     )
     {
         if (current == null || current.Items.Count == 0)
@@ -1260,7 +1267,7 @@ public partial class Container : Item
             }
             else if (recurse && item is Container)
             {
-                RecurseConsumeUpTo(item, type, amount, true, ref consumed, toDelete);
+                RecurseConsumeUpTo(item, type, amount, true, ref consumed, ref toDelete);
             }
         }
     }

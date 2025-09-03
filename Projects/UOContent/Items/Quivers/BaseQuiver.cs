@@ -50,7 +50,7 @@ public partial class BaseQuiver : Container, ICraftable, IAosItem
     private string _crafter;
 
     [SerializableFieldSaveFlag(4)]
-    private bool ShouldSerializeCrafter() => _crafter != null;
+    private bool ShouldSerializeCrafter() => !string.IsNullOrEmpty(_crafter);
 
     [InvalidateProperties]
     [SerializableField(5)]
@@ -73,7 +73,6 @@ public partial class BaseQuiver : Container, ICraftable, IAosItem
 
     public BaseQuiver(int itemID = 0x2FB7) : base(itemID)
     {
-        Weight = 2.0;
         Capacity = 500;
         Layer = Layer.Cloak;
 

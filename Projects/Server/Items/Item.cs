@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2024 - ModernUO Development Team                       *
+ * Copyright 2019-2025 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: Item.cs                                                         *
  *                                                                       *
@@ -192,7 +192,7 @@ public enum ExpandFlag
     Spawner = 0x100
 }
 
-public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEntity, IValueLinkListNode<Item>
+public partial class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEntity, IValueLinkListNode<Item>
 {
     private static readonly ILogger logger = LogFactory.GetLogger(typeof(Item));
 
@@ -328,7 +328,7 @@ public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEnt
     public virtual TimeSpan DecayTime => DefaultDecayTime;
 
     [CommandProperty(AccessLevel.GameMaster)]
-    public virtual bool Decays => Movable && Visible;
+    public virtual bool Decays => Movable && Visible && Spawner == null;
 
     public DateTime LastMoved { get; set; }
 
@@ -533,6 +533,8 @@ public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEnt
     }
 
     public List<Item> Items => LookupItems() ?? EmptyItems;
+
+    public int LookupContainerVersion() => (this as Container)?._version ?? LookupCompactInfo()?.Version ?? 0;
 
     [CommandProperty(AccessLevel.GameMaster)]
     public IEntity RootParent
@@ -792,6 +794,7 @@ public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEnt
     public virtual void GetProperties(IPropertyList list)
     {
         AddNameProperties(list);
+        AppendChildNameProperties(list);
     }
 
     [IgnoreDupe]
@@ -1695,11 +1698,11 @@ public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEnt
     {
         if (this is Container cont)
         {
-            return cont.m_Items ?? (cont.m_Items = new List<Item>());
+            return cont.m_Items ??= new List<Item>();
         }
 
         var info = AcquireCompactInfo();
-        return info.m_Items ?? (info.m_Items = new List<Item>());
+        return info.m_Items ??= new List<Item>();
     }
 
     private void SetFlag(ImplFlag flag, bool value)
@@ -1943,8 +1946,6 @@ public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEnt
         {
             AddQuestItemProperty(list);
         }
-
-        AppendChildNameProperties(list);
     }
 
     /// <summary>
@@ -2346,7 +2347,7 @@ public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEnt
             };
         }
 
-        var bounds = ItemBounds.Table[itemID & 0x3FFF];
+        var bounds = ItemBounds.Bounds[itemID & 0x3FFF];
 
         if (doubled)
         {
@@ -2470,15 +2471,6 @@ public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEnt
 
     public virtual void OnAdded(IEntity parent)
     {
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void SetSaveFlag(ref SaveFlag flags, SaveFlag toSet, bool setIf)
-    {
-        if (setIf)
-        {
-            flags |= toSet;
-        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3196,8 +3188,12 @@ public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEnt
         item.Map = m_Map;
 
         var items = AcquireItems();
-
         items.Add(item);
+
+        if (this is not Container)
+        {
+            AcquireCompactInfo().Version++;
+        }
 
         if (!item.IsVirtualItem)
         {
@@ -3267,6 +3263,13 @@ public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEnt
             );
         }
     }
+
+#if TRACK_LEAKS
+    ~Item()
+    {
+        EntityFinalizationTracker.NotifyFinalized(this);
+    }
+#endif
 
     public virtual void OnDelete()
     {
@@ -3354,6 +3357,11 @@ public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEnt
 
         if (items.Remove(item))
         {
+            if (this is not Container)
+            {
+                AcquireCompactInfo().Version++;
+            }
+
             item.SendRemovePacket();
 
             if (!item.IsVirtualItem)
@@ -4315,6 +4323,8 @@ public class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropertyListEnt
         public int m_TempFlags;
 
         public double m_Weight = -1;
+
+        public int Version;
     }
 
     [Flags]

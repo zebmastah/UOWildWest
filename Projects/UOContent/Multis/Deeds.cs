@@ -54,7 +54,6 @@ namespace Server.Multis.Deeds
     {
         public HouseDeed(int id, Point3D offset) : base(0x14F0)
         {
-            Weight = 1.0;
             LootType = LootType.Newbied;
 
             MultiID = id;
@@ -71,7 +70,11 @@ namespace Server.Multis.Deeds
         [CommandProperty(AccessLevel.GameMaster)]
         public Point3D Offset { get; set; }
 
+        public virtual Direction HouseDirection => Direction.South;
+
         public abstract Rectangle2D[] Area { get; }
+
+        public override double DefaultWeight => 1.0;
 
         public override void Serialize(IGenericWriter writer)
         {
@@ -153,7 +156,7 @@ namespace Server.Multis.Deeds
             else
             {
                 var center = new Point3D(p.X - Offset.X, p.Y - Offset.Y, p.Z - Offset.Z);
-                var res = HousePlacement.Check(from, MultiID, center, out var toMove);
+                var res = HousePlacement.Check(from, MultiID, center, out var toMove, HouseDirection);
 
                 switch (res)
                 {

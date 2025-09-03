@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ModernUO.CodeGeneratedEvents;
 using Server.Accounting;
 using Server.Collections;
 using Server.ContextMenus;
@@ -98,6 +99,8 @@ namespace Server.Multis
 
         [CommandProperty(AccessLevel.GameMaster)]
         public bool RestrictDecay { get; set; }
+
+        public virtual Direction HouseDirection => Direction.South;
 
         public virtual TimeSpan DecayPeriod => TimeSpan.FromDays(5.0);
 
@@ -2333,9 +2336,7 @@ namespace Server.Multis
                     }
                     else
                     {
-                        Container c = fromState.AddTrade(toState);
-
-                        c.DropItem(new TransferItem(this));
+                        fromState.AddTrade(toState).DropItem(new TransferItem(this));
                     }
                 }
             }
@@ -3260,6 +3261,7 @@ namespace Server.Multis
             }
         }
 
+        [OnEvent(nameof(PlayerMobile.PlayerDeletedEvent))]
         public static void HandleDeletion(Mobile mob)
         {
             var houses = GetHouses(mob);
@@ -3355,9 +3357,7 @@ namespace Server.Multis
             {
                 for (var i = 0; i < Doors.Count; ++i)
                 {
-                    Item item = Doors[i];
-
-                    item?.Delete();
+                    Doors[i]?.Delete();
                 }
 
                 Doors.Clear();

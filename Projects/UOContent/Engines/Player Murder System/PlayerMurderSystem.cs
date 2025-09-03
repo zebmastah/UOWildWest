@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using ModernUO.CodeGeneratedEvents;
 using Server.Collections;
 using Server.Logging;
 using Server.Mobiles;
@@ -41,6 +42,7 @@ public class PlayerMurderSystem : GenericPersistence
         EventSink.Disconnected += OnDisconnected;
     }
 
+    [OnEvent(nameof(PlayerMobile.PlayerDeletedEvent))]
     public static void OnPlayerDeleted(Mobile m)
     {
         if (m is PlayerMobile pm && _murderContexts.Remove(pm, out var context))
@@ -78,9 +80,10 @@ public class PlayerMurderSystem : GenericPersistence
         UpdateMurderContext(context);
     }
 
-    public static void OnLogin(Mobile m)
+    [OnEvent(nameof(PlayerMobile.PlayerLoginEvent))]
+    public static void OnLogin(PlayerMobile pm)
     {
-        if (m is not PlayerMobile pm || !GetMurderContext(pm, out var context))
+        if (!GetMurderContext(pm, out var context))
         {
             return;
         }
@@ -98,9 +101,17 @@ public class PlayerMurderSystem : GenericPersistence
 
     private static void OnDisconnected(Mobile m)
     {
-        if (m is PlayerMobile pm && _murderContexts.Remove(pm, out var context))
+        if (m is not PlayerMobile pm || !_murderContexts.TryGetValue(pm, out var context))
         {
-            _contextTerms.Remove(context);
+            return;
+        }
+
+        context.DecayKills();
+        _contextTerms.Remove(context);
+
+        if (pm.Kills <= 0 && context.ShortTermMurders <= 0)
+        {
+            _murderContexts.Remove(pm);
         }
     }
 
@@ -161,6 +172,8 @@ public class PlayerMurderSystem : GenericPersistence
     {
         var context = GetOrCreateMurderContext(player);
         context.ShortTermMurders = shortTermMurders;
+
+        context.ResetKillTime();
         UpdateMurderContext(context);
     }
 
